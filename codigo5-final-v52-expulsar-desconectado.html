@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
+<title>Código 5 · Online</title>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+:root{--ink:#211b2d;--pink:#c60072;--cream:#fff5df;--paper:#f5eee4;--line:#ded3c5}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(135deg,#faf3e8,#eee7df);color:var(--ink);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.wrap{max-width:1100px;margin:auto;padding:14px}
+.top{background:#c60072;color:#fff;border-radius:24px;padding:20px 22px;box-shadow:0 8px 25px #0002}
+.top h1{font-size:34px;margin:0;font-weight:900;letter-spacing:-1px}.top p{margin:3px 0 0;opacity:.9}
+.card{background:#fff;border:1px solid #eadfd3;border-radius:20px;padding:16px;margin:12px 0;box-shadow:0 4px 18px #0000000d}
+h2{margin:0 0 10px;font-size:20px}.row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+button,input,select{font:inherit;border-radius:12px;padding:11px 13px;border:1px solid #ccc}
+button{background:#211b2d;color:#fff;border:0;font-weight:700;cursor:pointer}button.alt{background:#eee8df;color:#211b2d}button.pink{background:#c60072}button.green{background:#18864b}
+button:disabled{opacity:.45;cursor:not-allowed}input{width:210px}.hidden{display:none!important}.muted{color:#716b72}.tiny{font-size:12px}
+.notice{padding:10px 12px;background:#fff8e9;border-left:4px solid #c60072;border-radius:10px}
+.players{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.player{padding:12px;border-radius:15px;background:#f0ece7;border:2px solid transparent}.player.me{border-color:#c60072}.player.turn{box-shadow:0 0 0 3px #ffd5eb}.player.out{opacity:.45}.player strong{display:block}.badge{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.board{display:grid;grid-template-columns:1.1fr 1.5fr;gap:12px}.opponents{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.zone{background:#f7f2ec;border-radius:14px;padding:8px;min-width:0}.zone h3{margin:0 0 6px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.opponents .tiles{display:flex;gap:3px;flex-wrap:nowrap;justify-content:center}.opponents .tile{width:34px;height:45px;border-radius:8px}.opponents .tile .n{font-size:16px}.opponents .tile .dots{font-size:8px;letter-spacing:0;margin-top:2px}
+.tiles{display:flex;gap:7px;flex-wrap:wrap}.tile{width:55px;height:70px;border-radius:13px;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:inset 0 0 0 2px #ffffff55,0 3px 7px #0002}.tile .n{font-size:23px;font-weight:900;line-height:1}.tile .dots{font-size:12px;letter-spacing:1px;margin-top:5px}
+.empty{color:#777;font-size:13px;padding:12px 0}.log{max-height:260px;overflow:auto}.event{padding:8px 10px;border-bottom:1px solid #eee;font-size:14px}.winner{font-size:25px;font-weight:900;color:#c60072}
+.my-hand{display:flex;align-items:stretch;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap}.my-card{flex:1 1 0;min-width:92px}.hint-slot{flex:0 0 58px;min-width:58px;display:flex;align-items:center;justify-content:center;align-self:stretch}.hint-slot .hint-number{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff8d8;border:3px dashed #c60072;color:#211b2d;font-size:22px;font-weight:900;box-shadow:0 3px 8px #0002}.hint-slot .hint-label{font-size:9px;text-align:center;font-weight:800;color:#c60072;line-height:1.05;margin-top:3px}.my-card{border:2px solid;border-radius:14px;padding:10px;text-align:center;background:#fff}.my-card .circle{width:34px;height:34px;border-radius:50%;margin:0 auto 6px;box-shadow:inset 0 0 0 2px #ffffff55,0 2px 5px #0003}.my-card .pos{font-size:11px;color:#777;font-weight:800;text-transform:uppercase}.my-card .order{font-size:13px;font-weight:900;margin-top:4px}
+.controls{background:#f8f3ed;border-radius:16px;padding:13px}.step{font-weight:900;margin-bottom:7px}.hint-box{border:1px solid #eadfd3;border-radius:14px;padding:12px;margin-top:10px}
+.deduccion{margin-top:18px;background:#fff;padding:12px;border-radius:18px;border:2px solid #ddd}.deduccion h2{text-align:center}.deduccion p{text-align:center;margin:0 0 15px;color:#666}.tablero-deduccion{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px;width:100%;min-width:0}.casilla{position:relative;min-width:0;height:52px;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:17px;font-weight:900;color:#fff;cursor:pointer;user-select:none;overflow:hidden;border:2px solid white;text-shadow:1px 1px 2px #333;line-height:1}.casilla .num{font-size:20px}.casilla .puntos{font-size:11px;letter-spacing:1px;margin-top:5px}.casilla.tachada{opacity:.42;filter:grayscale(.35)}.casilla.tachada:before,.casilla.tachada:after{content:"";position:absolute;width:135%;height:5px;background:#111;border-radius:5px;top:50%;left:-17%}.casilla.tachada:before{transform:rotate(45deg)}.casilla.tachada:after{transform:rotate(-45deg)}
+.board-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:3px;align-items:start}.reserve-row{margin:0;grid-column:1/-1}.game-left-column,.game-right-column{display:flex;flex-direction:column;gap:3px;min-width:0}.my-fichas-card,.deduccion,.turn-card,.hints-card{margin:0}.hints-card{min-height:0;flex:1}.hints-card .log{max-height:720px}
+@media(max-width:760px){.board-layout{display:flex;flex-direction:column;gap:8px}.game-left-column,.game-right-column{display:flex;flex-direction:column;gap:8px;width:100%}.hints-card .log{max-height:300px}.players{grid-template-columns:repeat(2,1fr)}.board{grid-template-columns:1fr}.opponents{grid-template-columns:1fr 1fr}.top h1{font-size:28px}.my-hand{gap:5px}.my-card{padding:7px 3px;min-width:64px}.my-card .circle{width:28px;height:28px}.hint-slot{flex-basis:42px;min-width:42px}.hint-slot .hint-number{width:38px;height:38px;font-size:18px}.tablero-deduccion{grid-template-columns:repeat(12,minmax(0,1fr));gap:4px}.casilla{min-width:0;height:52px}.casilla .num{font-size:20px}.casilla .puntos{font-size:10px}}
+
+.deduction-order-box{margin-top:14px;padding:11px;background:#f7f2ec;border-radius:14px}
+.deduction-order-buttons{display:flex;gap:7px;flex-wrap:wrap}
+.deduction-order-buttons button{font-size:13px;padding:8px 10px}
+.deduction-order-buttons button:disabled{opacity:.45}
+.deduced-number{font-size:11px;font-weight:800;margin-top:3px}
+
+.turn-notification{position:fixed;top:22px;left:50%;transform:translateX(-50%) translateY(-140%);z-index:9999;background:#c60072;color:#fff;padding:14px 24px;border-radius:18px;box-shadow:0 8px 30px #0004;font-size:20px;font-weight:900;text-align:center;transition:transform .28s ease;pointer-events:none}.turn-notification.show{transform:translateX(-50%) translateY(0)} .turn-alert{margin:0 0 12px;padding:14px 16px;border-radius:16px;text-align:center;font-weight:900;font-size:19px;background:#fff1c9;border:2px solid #f5a000}.turn-alert.mine{background:#ffe0f0;border-color:#c60072;color:#c60072}.turn-alert.other{background:#eef2f7;border-color:#cbd5e1;color:#374151}
+
+/* v27: hacer mas compacto solo el apartado Mis 5 fichas */
+.my-fichas-card{padding:10px}
+.my-fichas-card h2{font-size:18px;margin-bottom:7px}
+.my-fichas-card .notice{font-size:12px;line-height:1.25;padding:7px 9px}
+.my-fichas-card .my-hand{gap:5px;margin-top:8px}
+.my-fichas-card .my-card{min-width:72px;padding:7px 4px;border-radius:11px}
+.my-fichas-card .my-card .circle{width:28px;height:28px;margin-bottom:4px}
+.my-fichas-card .my-card .pos{font-size:9px}
+.my-fichas-card .my-card .order{font-size:11px;margin-top:2px}
+.my-fichas-card .hint-slot{flex-basis:44px;min-width:44px}
+.my-fichas-card .hint-slot .hint-number{width:38px;height:38px;font-size:18px}
+.my-fichas-card .hint-slot .hint-label{font-size:8px}
+.my-fichas-card .deduction-order-box{margin-top:9px;padding:8px;border-radius:11px}
+.my-fichas-card .deduction-order-box .tiny{font-size:10px;line-height:1.2;margin-bottom:5px!important}
+.my-fichas-card .deduction-order-buttons{gap:5px}
+.my-fichas-card .deduction-order-buttons button{font-size:11px;padding:6px 8px}
+.my-fichas-card .deduced-number{font-size:10px}
+@media(max-width:760px){.my-fichas-card .my-card{min-width:64px;padding:6px 3px}.my-fichas-card .my-hand{gap:4px}.my-fichas-card .hint-slot{flex-basis:38px;min-width:38px}}
+
+/* v28: reserva/fichas públicas pequeña y debajo de Turno */
+.reserve-under-turn{grid-column:auto!important;margin:0!important;padding:8px!important;border-radius:14px!important}
+.reserve-under-turn h2{font-size:15px!important;margin:0 0 4px!important}
+.reserve-under-turn .reserve-subtitle{font-size:9px!important;margin-bottom:5px!important}
+.reserve-under-turn .tiles{gap:4px!important;max-height:92px;overflow:hidden}
+.reserve-under-turn .tile{width:34px!important;height:44px!important;border-radius:8px!important}
+.reserve-under-turn .tile .n{font-size:16px!important}
+.reserve-under-turn .tile .dots{font-size:8px!important;letter-spacing:0!important;margin-top:2px!important}
+@media(max-width:760px){.reserve-under-turn .tiles{max-height:none;overflow:visible}.reserve-under-turn .tile{width:42px!important;height:52px!important}.reserve-under-turn .tile .n{font-size:18px!important}}
+
+/* MENSAJE DE VICTORIA */
+.victory-overlay{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#211b2dcc;
+  padding:20px;
+}
+.victory-box{
+  width:min(520px,92vw);
+  background:#fff;
+  border-radius:24px;
+  padding:28px 22px;
+  text-align:center;
+  box-shadow:0 15px 50px #0005;
+  border:3px solid #c60072;
+}
+.victory-box .trophy{
+  font-size:58px;
+  line-height:1;
+  margin-bottom:10px;
+}
+.victory-box h2{
+  color:#c60072;
+  font-size:30px;
+  margin:0 0 8px;
+}
+.victory-box p{
+  font-size:18px;
+  margin:0;
+}
+
+
+/* Botón Empezar partida junto a Compartir partida */
+#btnEmpezarPartida{
+  display:inline-block !important;
+  width:auto !important;
+  margin:0 0 0 8px !important;
+  vertical-align:middle;
+}
+
+
+#btnEmpezarPartida{
+  display:inline-block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  width:auto !important;
+  margin:0 0 0 8px !important;
+  vertical-align:middle !important;
+}
+
+</style>
+</head>
+<body>
+<div class="turn-notification" id="turnNotification">🎯 ¡Es tu turno!</div>
+<div class="wrap">
+<div class="top"><h1>CÓDIGO 5</h1><p>Observa · deduce · pregunta · ¡Código 5!</p></div>
+<div class="card" id="lobby">
+<h2>🎮 Partida online · 2 a 4 jugadores</h2>
+<div class="row">
+<input id="name" maxlength="14" placeholder="Tu nombre"/>
+<button class="pink" onclick="createRoom()">Crear partida</button>
+</div>
+<div style="height:8px"></div>
+<div class="row">
+<input id="room" maxlength="5" placeholder="Código de sala (5 números)"/>
+<button class="alt" onclick="joinRoom()">Unirse a una partida</button>
+</div>
+<p class="muted" id="status"></p>
+</div>
+<div class="hidden" id="game">
+<div class="card">
+<div class="row" style="justify-content:space-between">
+<div><b>Sala:</b> <span id="roomShow"></span> <button class="alt" onclick="copyRoom()">📋 Copiar código</button> <button class="pink" onclick="shareRoom()">📲 Compartir partida</button></div>
+<div><b>Turno:</b> <span id="turnShow"></span></div>
+</div>
+<div class="players" id="players" style="margin-top:12px"></div>
+</div>
+<div class="card">
+<h2>👀 Fichas de los demás jugadores</h2>
+<div class="notice">Tú no ves tus números. Sí ves los <b>5 números de cada rival</b>.</div>
+<div class="opponents" id="opponents" style="margin-top:10px"></div>
+</div>
+<div class="reserve-row card reserve-under-turn">
+<h2>🔎 Reserva / fichas públicas</h2>
+<div class="tiny muted reserve-subtitle">La ficha más reciente aparece primero.</div>
+<div class="tiles" id="publicTiles"></div>
+</div>
+<div class="board-layout">
+<div class="game-left-column">
+<div class="deduccion">
+<h2>🧠 Mi tablero de deducción</h2>
+<p>Toca un número para tacharlo o volver a marcarlo.</p>
+<div class="tablero-deduccion" id="tableroDeduccion"></div>
+</div>
+<div class="card my-fichas-card">
+<h2>🧩 Mis 5 fichas</h2>
+<div class="notice">Ves <b>los colores y el orden de tus fichas</b>, pero nunca sus números. De izquierda a derecha están ordenadas de <b>menor a mayor</b>.</div>
+<div class="my-hand" id="myHand"></div>
+<div class="deduction-order-box" id="deductionOrderBox">
+<div class="tiny muted" style="margin-bottom:8px">
+        Cuando en un color quede <b>un único número sin tachar</b>, podrás añadirlo a tu orden.
+        El juego <b>no te dirá si ese número es correcto o incorrecto</b>; se guarda como tu deducción.
+      </div>
+<div class="deduction-order-buttons" id="deductionOrderButtons"></div>
+</div>
+</div>
+<div class="card hints-card"><h2>📜 Pistas de la partida</h2><div class="log" id="log"></div></div>
+</div>
+<div class="game-right-column">
+<div class="card turn-card">
+<h2>🎯 Turno</h2>
+<div class="muted" id="turnHelp">Esperando...</div>
+<div class="controls" style="margin-top:10px">
+<div class="step">1. Elige el color y revela una ficha</div>
+<div class="row" style="margin-bottom:8px">
+<label>Color:</label>
+<select id="drawColorSel">
+<option value="0">🟢 Verde</option>
+<option value="1">🟣 Morado</option>
+<option value="2">🔵 Azul</option>
+<option value="3">🔴 Rojo</option>
+<option value="4">🟠 Naranja</option>
+</select>
+</div>
+<button class="pink" id="drawBtn" onclick="drawTile()">Revelar ficha</button>
+<div class="hint-box" id="hintControls">
+<div class="step">2. Pide una pista a otro jugador</div>
+<div class="row" style="margin-bottom:8px">
+<label>Jugador:</label><select id="targetSel"></select>
+</div>
+<div class="row" style="margin-bottom:8px">
+<label>Tipo:</label>
+<select id="hintSel" onchange="updateHintFields()">
+<option value="position">¿En qué posición iría esta ficha?</option>
+<option value="points">¿Tiene los mismos puntos que una de sus fichas?</option>
+</select>
+</div>
+<div class="row hidden" id="colorRow">
+<label>Color de <b>tu propia ficha</b>:</label><select id="colorSel"></select>
+</div>
+<div class="row" style="margin-top:10px">
+<label>Ficha pública:</label>
+<div class="notice" id="pubCurrent" style="flex:1;min-width:190px">Revela una ficha para poder pedir la pista.</div>
+</div>
+<button id="hintBtn" onclick="askHint()">Pedir pista</button>
+</div>
+<div style="margin-top:12px">
+<div class="step"></div>
+<div class="notice"></div>
+<button class="green hidden" id="passBtn" onclick="passTurn()">➡️ Pasar turno</button>
+</div>
+<div style="margin-top:12px">
+<button class="pink" id="codeBtn" onclick="claimCode()">🏆 ¡CÓDIGO 5!</button>
+<button class="green" disabled="" id="newGameBtn" onclick="requestNewGame()" style="margin-top:10px;width:100%">🔄 Volver a empezar otra partida</button>
+</div>
+</div>
+<p class="tiny muted">Para ganar debes decir tus cinco números en orden ascendente. Si fallas, quedas eliminado.</p>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+<script>
+let peer=null,hostConn=null,isHost=false,me=null,roomCode="",state=null,conns={},opponentCodes={};
+let lastNotifiedTurn=null,lastNotifiedTurnSeq=-1;
+const COLORS=["#22c55e","#a96ac8","#16a9d8","#e7352b","#f5a000"];
+const NAMES=["VERDE","MORADO","AZUL","ROJO","NARANJA"];
+
+function $(id){return document.getElementById(id)}
+function setStatus(s){$("status").textContent=s}
+function shuffled(a){return a.slice().sort(()=>Math.random()-.5)}
+function makeShortRoomCode(){return String(Math.floor(10000+Math.random()*90000))}
+function makeDeck(){
+ const d=[];
+ for(let n=1;n<=60;n++){
+   const colorIndex=(n-1)%5;
+   const points=(Math.floor((n-1)/5)%3)+1;
+   d.push({id:n,n,points,color:COLORS[colorIndex],colorName:NAMES[colorIndex],colorIndex});
+ }
+ return shuffled(d);
+}
+function dealHand(deck){
+ const hand=[];
+ for(let c=0;c<5;c++){
+   const pos=deck.findIndex(t=>t.colorIndex===c);
+   if(pos<0)return null;
+   hand.push(deck.splice(pos,1)[0]);
+ }
+ return hand.sort((a,b)=>a.n-b.n);
+}
+function tileHTML(t){
+ if(!t)return "";
+ return `<div class="tile" style="background:${t.color}"><div class="n">${t.n}</div><div class="dots">${"●".repeat(t.points)}</div></div>`;
+}
+function safeState(){
+ return {
+   players:state.players.map(p=>({id:p.id,name:p.name,alive:p.alive,connected:p.connected,drawn:p.drawn||false})),
+   public:state.public,turn:state.turn,turnSeq:state.turnSeq||0,started:state.started,winner:state.winner
+ };
+}
+function getOpponentData(id){
+ return state.players.filter(p=>p.id!==id&&p.connected).map(p=>({id:p.id,name:p.name,alive:p.alive,code:p.code}));
+}
+function sendAll(){
+ const s=safeState();
+ for(const p of state.players){
+   if(p.id==="p1")continue;
+   const c=conns[p.id]; if(!c)continue;
+   try{c.send({type:"state",state:s});c.send({type:"opponents",opponents:getOpponentData(p.id)})}catch(e){}
+ }
+}
+function sendPrivateData(id){
+ const c=conns[id]; if(!c)return;
+ const mine=state.players.find(p=>p.id===id); if(!mine)return;
+ try{c.send({type:"private",code:mine.code});c.send({type:"opponents",opponents:getOpponentData(id)})}catch(e){}
+}
+function sendAllOpponentCodes(){for(const p of state.players)if(p.connected&&p.id!=="p1")sendPrivateData(p.id)}
+function enterGame(){
+ $("lobby").classList.add("hidden");$("game").classList.remove("hidden");$("roomShow").textContent=roomCode;setStatus("");render();
+}
+function expulsarJugadorDesconectado(id){
+  if(!state || !isHost || id==="p1") return;
+  const idx=state.players.findIndex(p=>p.id===id);
+  if(idx<0) return;
+  const jugador=state.players[idx];
+  const enPartida=!!state.started && !state.winner;
+
+  if(enPartida){
+    const eraTurno=(state.turn===idx);
+    state.players.splice(idx,1);
+
+    if(state.players.length){
+      if(eraTurno) state.turn=idx % state.players.length;
+      else if(state.turn>idx) state.turn--;
+      state.turnSeq=(state.turnSeq||0)+1;
+    }else state.turn=0;
+
+    broadcastLog(`<b>${jugador.name}</b> se ha desconectado y ha sido expulsado de la partida.`);
+    sendAll();
+    render();
+  }else{
+    jugador.connected=false;
+    delete conns[id];
+    sendAll();
+    render();
+    addLog(`<b>${jugador.name}</b> se ha desconectado.`);
+  }
+}
+
+function createRoom(){
+ const name=$("name").value.trim()||"Jugador 1";
+ isHost=true;me="p1";setStatus("Creando sala...");
+ roomCode=makeShortRoomCode();
+ peer=new Peer(roomCode);
+ peer.on("open",id=>{
+   roomCode=id;
+   state={deck:makeDeck(),public:[],turn:0,turnSeq:0,started:false,winner:null,players:[
+    {id:"p1",name,code:[],alive:true,connected:true,drawn:false},
+    {id:"p2",name:"Jugador 2",code:[],alive:true,connected:false,drawn:false},
+    {id:"p3",name:"Jugador 3",code:[],alive:true,connected:false,drawn:false},
+    {id:"p4",name:"Jugador 4",code:[],alive:true,connected:false,drawn:false}
+   ]};
+   for(const p of state.players){p.code=dealHand(state.deck);if(!p.code){setStatus("Error preparando las fichas.");return}}
+   enterGame();
+   addLog("Sala creada. Comparte el código <b>"+roomCode+"</b>.");
+ });
+ peer.on("connection",c=>{
+   c.on("open",()=>{
+     if(state && state.started && !state.winner){try{c.send({type:"error",text:"La partida ya ha comenzado. No puedes unirte."});c.close()}catch(e){}return;} const free=state.players.find(p=>p.id!=="p1"&&!p.connected);
+     if(!free){try{c.send({type:"error",text:"La sala está llena."});c.close()}catch(e){}return}
+     free.connected=true;conns[free.id]=c;
+     if(c.metadata?.name)free.name=String(c.metadata.name).slice(0,14);
+     c.send({type:"welcome",id:free.id,state:safeState(),code:free.code,opponents:getOpponentData(free.id)});
+     c.on("data",m=>{
+       if(m?.type==="join"){
+         if(m.name)free.name=String(m.name).slice(0,14);
+         c.send({type:"welcome",id:free.id,state:safeState(),code:free.code,opponents:getOpponentData(free.id)});
+         sendAllOpponentCodes();sendAll();render();addLog(`<b>${free.name}</b> se ha unido a la partida.`);return;
+       }
+       hostHandle(free.id,m);
+     });
+     c.on("close",()=>{delete conns[free.id];expulsarJugadorDesconectado(free.id)}); c.on("error",()=>{delete conns[free.id];expulsarJugadorDesconectado(free.id)});
+   });
+ });
+ peer.on("error",err=>{
+   if(err?.type==="unavailable-id"){
+     try{peer.destroy()}catch(e){}
+     setStatus("Generando otro código...");
+     setTimeout(createRoom,150);
+   }else{
+     setStatus("Error de conexión: "+(err?.type||"desconocido"));
+   }
+ });
+}
+function joinRoom(invitedRoom="", invitedName="") {
+ const name = (invitedName || $("name").value.trim() || "Jugador").trim();
+ roomCode = (invitedRoom || $("room").value.trim()).trim();
+ if(!roomCode){setStatus("Escribe el código de sala.");return}
+ setStatus("Conectando...");isHost=false;peer=new Peer();
+ peer.on("open",()=>{
+   hostConn=peer.connect(roomCode,{reliable:true,metadata:{name}});
+   hostConn.on("error",err=>setStatus("No se pudo conectar con la sala. Comprueba el código."));
+   hostConn.on("open",()=>{setStatus("Conectado. Entrando...");hostConn.send({type:"join",name})});
+   hostConn.on("data",m=>{
+     if(!m)return;
+     if(m.type==="error"){setStatus(m.text);return}
+     if(m.type==="welcome"){
+       me=m.id;state=m.state;
+       lastNotifiedTurn=null;
+       state.players.forEach(p=>p.code=[]);
+       const mine=state.players.find(p=>p.id===me);if(mine)mine.code=m.code||[];
+       updateOpponentCodes(m.opponents||[]);enterGame();addLog("Te has unido a la partida.");return;
+     }
+     if(m.type==="state"){
+       const myCode=state?.players?.find(p=>p.id===me)?.code||[];
+       state=m.state; const mine=state.players.find(p=>p.id===me); if(mine)mine.code=myCode; render(); return;
+     }
+     if(m.type==="turn"){ if(state){ state.turn=Number(m.turn); state.turnSeq=Number(m.turnSeq??((state.turnSeq||0)+1)); state.players.forEach(p=>{p.drawn=false;p.hasHint=false}); render(); notifyTurnChange(true); } return; }
+     if(m.type==="private"){const mine=state?.players?.find(p=>p.id===me);if(mine)mine.code=m.code||[];render();return}
+     if(m.type==="opponents"){updateOpponentCodes(m.opponents||[]);render();return}
+     if(m.type==="newGame"){
+       state=m.state;
+       const mine=state.players.find(p=>p.id===me);
+       if(mine)mine.code=m.code||[];
+       updateOpponentCodes(m.opponents||[]);
+       resetLocalDeductions();
+       render();
+       return;
+     }
+     if(m.type==="log"){addLog(m.text)}
+   });
+ });
+ peer.on("error",err=>setStatus(err?.type==="peer-unavailable"?"No encuentro esa sala. Comprueba el código.":"Error de conexión: "+(err?.type||"desconocido")));
+}
+function updateOpponentCodes(list){
+ opponentCodes={};for(const p of list)opponentCodes[p.id]={...p,code:p.code||[]};
+}
+function nextAlive(i){
+ for(let k=1;k<=4;k++){const j=(i+k)%4,p=state.players[j];if(p&&p.connected&&p.alive)return j}
+ return i;
+}
+function broadcastLog(text){
+ state.public.push({id:"log-"+Date.now()+"-"+Math.random(),text});
+ for(const p of state.players)if(p.id!=="p1"&&conns[p.id])try{conns[p.id].send({type:"log",text})}catch(e){}
+}
+function hostHandle(id,m){
+ if(!state||!m)return;
+ const idx=state.players.findIndex(p=>p.id===id),p=state.players[idx];
+ if(m.type==="newGame"){ if(state.winner && isHost) startNewGame(); return; }
+ if(!p||!p.alive)return;
+
+ if(m.type==="draw"){
+   if(state.turn!==idx||state.deck.length===0||p.drawn)return;
+
+   const colorIndex=Number(m.colorIndex);
+   if(!Number.isInteger(colorIndex)||colorIndex<0||colorIndex>4)return;
+
+   const available=state.deck
+     .map((t,i)=>({t,i}))
+     .filter(x=>Number(x.t.colorIndex)===colorIndex);
+
+   if(available.length===0){
+     if(id===me){
+       alert("Ya no quedan fichas de ese color en la reserva.");
+     }
+     return;
+   }
+
+   // Elegimos al azar una ficha del color que ha pedido el jugador.
+   const chosen=available[Math.floor(Math.random()*available.length)];
+   const t=state.deck.splice(chosen.i,1)[0];
+
+   state.public.push(t);
+   p.drawn=true;
+
+   broadcastLog(`<b>${p.name}</b> ha elegido el color <b>${t.colorName}</b> y ha revelado la ficha <b>${t.n}</b>.`);
+
+   sendAll();sendAllOpponentCodes();render();return;
+ }
+
+ if(m.type==="hint"){
+   if(state.turn!==idx||!p.drawn)return;
+   const tile=state.public.find(t=>String(t.id)===String(m.tileId)&&t.n);
+   const target=state.players.find(x=>x.id===m.targetId);
+   if(!tile||!target||!target.alive||target.id===id)return;
+   let text="";
+   if(m.kind==="position"){
+     const arr=p.code.map(x=>x.n).sort((a,b)=>a-b);
+     const before=arr.filter(x=>x<tile.n).length;
+     const place=["antes del 1.º","entre el 1.º y 2.º","entre el 2.º y 3.º","entre el 3.º y 4.º","entre el 4.º y 5.º","después del 5.º"][before];
+     text=`<b>${p.name}</b> pregunta a <b>${target.name}</b>: la ficha <b>${tile.n}</b> iría <b>${place}</b> de <b>sus propias cinco fichas</b>.`;
+   }else{
+     // La pista de puntos se refiere SIEMPRE a la ficha del COLOR ELEGIDO
+     // que pertenece al JUGADOR QUE HACE LA PREGUNTA (p), no al jugador
+     // consultado (target). El otro jugador solo responde SÍ o NO.
+     const requestedColor=Number(m.colorIndex);
+     const askerTile=(p.code||[]).find(x=>Number(x.colorIndex)===requestedColor);
+     if(!askerTile)return;
+     const same=Number(askerTile.points)===Number(tile.points);
+     text=`<b>${p.name}</b> pregunta a <b>${target.name}</b> si la ficha <b>${tile.n}</b> tiene los mismos puntos que <b>su propia ficha ${askerTile.colorName}</b>: <b>${same?"SÍ":"NO"}</b>.`;
+   }
+   broadcastLog(text);
+   // La pista termina automáticamente el turno y pasa al siguiente jugador.
+   p.drawn=false;
+   p.hasHint=false;
+   state.players.forEach(x=>{x.drawn=false;x.hasHint=false});
+   state.turn=nextAlive(idx);
+   state.turnSeq=(state.turnSeq||0)+1;
+   broadcastLog(`➡️ Turno de <b>${state.players[state.turn].name}</b>.`);
+   sendAll(); sendAllOpponentCodes();
+   for(const q of state.players){ if(q.id!=="p1" && conns[q.id]) try{conns[q.id].send({type:"turn",turn:state.turn,turnSeq:state.turnSeq||0})}catch(e){} }
+   render(); notifyTurnChange(true); return;
+ }
+
+ if(m.type==="pass"){
+   if(state.turn!==idx||!p.drawn&&!p.hasHint)return;
+   p.drawn=false;p.hasHint=false;
+   state.players.forEach(x=>{x.drawn=false;x.hasHint=false});
+   state.turn=nextAlive(idx);
+   state.turnSeq=(state.turnSeq||0)+1;
+   broadcastLog(`➡️ Turno de <b>${state.players[state.turn].name}</b>.`);
+   sendAll();sendAllOpponentCodes();render(); notifyTurnChange(true); return;
+ }
+
+ if(m.type==="claim"){
+   const guess=(m.guess||[]).map(Number).sort((a,b)=>a-b);
+   const actual=p.code.map(x=>x.n).sort((a,b)=>a-b);
+   const ok=guess.length===5&&guess.every((v,i)=>v===actual[i]);
+   if(ok){state.winner=p.name;state.started=false;broadcastLog(`🏆 <b>${p.name}</b> ha acertado su CÓDIGO 5.`)}
+   else{p.alive=false;p.drawn=false;p.hasHint=false;broadcastLog(`❌ <b>${p.name}</b> ha fallado su CÓDIGO 5 y queda eliminado.`);state.turn=nextAlive(idx);state.turnSeq=(state.turnSeq||0)+1}
+   sendAll();sendAllOpponentCodes();render();
+ }
+}
+function canAct(){
+ if(!state||state.winner)return false;
+ const p=state.players.find(x=>x.id===me),i=state.players.findIndex(x=>x.id===me);
+ return !!(p&&p.alive&&state.turn===i);
+}
+function drawTile(){
+ if(!canAct())return;
+
+ const colorIndex=Number($("drawColorSel")?.value ?? 0);
+ const message={type:"draw",colorIndex:colorIndex};
+
+ if(isHost)hostHandle(me,message);
+ else if(hostConn)hostConn.send(message);
+}
+function askHint(){
+ if(!canAct())return;
+ const mine=state.players.find(p=>p.id===me);
+ if(!mine?.drawn){alert("Primero debes revelar una ficha.");return}
+ const publicTiles=state.public.filter(t=>t.n);
+ const latestTile=publicTiles.length?publicTiles[publicTiles.length-1]:null;
+ const target=$("targetSel").value,kind=$("hintSel").value;
+ if(!latestTile||!target)return;
+ const m={type:"hint",tileId:latestTile.id,targetId:target,kind};
+ if(kind==="points")m.colorIndex=Number($("colorSel").value);
+ if(kind==="position"){
+   // Guardamos el número de la ficha revelada para mostrarlo entre nuestras
+   // fichas exactamente en la posición indicada por la pista.
+   posicionesPistaNumeros.push(Number(latestTile.n));
+ }
+ if(isHost)hostHandle(me,m);else hostConn.send(m);
+ renderMyHand();
+}
+function passTurn(){
+ if(!canAct())return;
+ const mine=state.players.find(p=>p.id===me);
+ if(!mine?.drawn&&!mine?.hasHint){alert("Primero revela una ficha.");return}
+ const m={type:"pass"};if(isHost)hostHandle(me,m);else hostConn.send(m);
+}
+function resetLocalDeductions(){
+  deduccionesPorColor={};
+  posicionesPistaNumeros=[];
+  document.querySelectorAll(".casilla").forEach(c=>c.classList.remove("tachada"));
+  const log=$("log");
+  if(log) log.innerHTML="<div class='empty'>Todavía no hay pistas.</div>";
+  renderDeductionOrderButtons();
+}
+
+function startNewGame(){
+  if(!isHost || !state || !state.winner)return;
+
+  const deck=makeDeck();
+  const newPlayers=state.players.map(p=>({
+    id:p.id,
+    name:p.name,
+    code:[],
+    alive:true,
+    connected:!!p.connected,
+    drawn:false,
+    hasHint:false
+  }));
+
+  for(const p of newPlayers){
+    p.code=dealHand(deck);
+    if(!p.code){
+      setStatus("Error preparando la nueva partida.");
+      return;
+    }
+  }
+
+  const jugadoresActivos = newPlayers.filter(p => p && p.id);
+    const jugadorInicial = jugadoresActivos.length
+      ? jugadoresActivos[Math.floor(Math.random() * jugadoresActivos.length)]
+      : null;
+
+    state={
+      deck:deck,
+      public:[],
+      turn:jugadorInicial ? jugadoresActivos.indexOf(jugadorInicial) : 0,
+      turnSeq:(state.turnSeq||0)+1,
+      started:true,
+      initialTurnRandomized:true,
+      winner:null,
+      players:newPlayers
+    };
+  lastNotifiedTurn=null; lastNotifiedTurnSeq=-1;
+  deduccionesPorColor={};
+  posicionesPistaNumeros=[];
+  resetLocalDeductions();
+
+  const s=safeState();
+  for(const p of state.players){
+    if(p.id==="p1")continue;
+    const c=conns[p.id];
+    if(!c)continue;
+    try{c.send({type:"newGame",state:s,code:p.code,opponents:getOpponentData(p.id)})}catch(e){}
+  }
+
+  render();
+  // No añadimos la partida anterior al historial: la nueva partida empieza limpia.
+}
+
+function requestNewGame(){
+  if(!state?.winner)return;
+  if(isHost) startNewGame();
+  else if(hostConn) hostConn.send({type:"newGame"});
+}
+
+function claimCode(){
+ const proposed=[];
+
+ // Números que el jugador ha añadido por descarte.
+ Object.keys(deduccionesPorColor)
+   .forEach(colorIndex=>{
+     const n=Number(deduccionesPorColor[colorIndex]);
+     if(Number.isInteger(n)) proposed.push(n);
+   });
+
+ // Cuando hay 5, se cargan automáticamente en Código 5.
+ if(proposed.length===5){
+   const ordered=proposed.slice().sort((a,b)=>a-b);
+
+   if(!confirm(
+     "Vas a probar estos 5 números:\n\n"+
+     ordered.join(" · ")+
+     "\n\n¿Quieres decir ¡CÓDIGO 5!?"
+   )) return;
+
+   const msg={type:"claim",guess:ordered};
+   if(isHost) hostHandle(me,msg);
+   else if(hostConn) hostConn.send(msg);
+   return;
+ }
+
+ // Si todavía no hay 5, se mantiene la posibilidad de escribirlos manualmente.
+ const guess=prompt(
+   "Todavía no tienes 5 números añadidos por descarte.\n"+
+   "Escribe tus 5 números en orden, separados por espacios:"
+ );
+ if(!guess)return;
+
+ const a=guess.trim().split(/\s+/).map(Number);
+ if(a.length!==5||a.some(x=>x<1||x>60)){
+   alert("Introduce 5 números del 1 al 60.");
+   return;
+ }
+
+ const msg={type:"claim",guess:a};
+ if(isHost) hostHandle(me,msg);
+ else if(hostConn) hostConn.send(msg);
+}
+function roomShareText(){
+ const url=location.href.split('#')[0];
+ return `🎮 ¡Únete a mi partida de Código 5!\n\nCódigo de sala: ${roomCode}\n\nAbre el juego aquí: ${url}\n\nIntroduce el código en «Unirse a una partida».`;
+}
+function copyRoom(){
+ if(!roomCode)return;
+ const text=roomShareText();
+ if(navigator.clipboard)navigator.clipboard.writeText(text).then(()=>alert("Mensaje de partida copiado. Ya puedes pegarlo en WhatsApp.")).catch(()=>alert(text));
+ else alert(text);
+}
+async function shareRoom(){
+ if(!roomCode)return;
+ const text=roomShareText();
+ if(navigator.share){
+   try{
+     await navigator.share({title:'Código 5 · Partida online',text});
+     return;
+   }catch(e){ if(e?.name==='AbortError')return; }
+ }
+ const wa='https://wa.me/?text='+encodeURIComponent(text);
+ window.open(wa,'_blank','noopener,noreferrer');
+}
+function updateHintFields(){
+ const points=$("hintSel").value==="points";
+ $("colorRow").classList.toggle("hidden",!points);
+ const target=$("targetSel").value;
+ const targetPlayer=state?.players?.find(x=>x.id===target);
+ // Cada jugador tiene exactamente una ficha de cada color.
+ // IMPORTANTE: el color que se pregunta pertenece al JUGADOR QUE HACE
+ // LA PREGUNTA. El jugador consultado solo responde SÍ o NO.
+ // En clientes que no son el anfitrión no exponemos números/puntos ajenos;
+ // el anfitrión comprueba la ficha propia del preguntador.
+ const mine=state?.players?.find(x=>x.id===me);
+ const askerColors=(mine?.code||[]).map(t=>({colorIndex:t.colorIndex,colorName:t.colorName}));
+ const colors=askerColors.length===5?askerColors:NAMES.map((name,i)=>({colorIndex:i,colorName:name}));
+ $("colorSel").innerHTML=colors.map(t=>`<option value="${t.colorIndex}">${t.colorName}</option>`).join("");
+}
+
+let deduccionesPorColor = {};
+// Número de la última ficha para la que el jugador recibió una pista de posición.
+// Se muestra temporalmente entre sus fichas, sin convertirla en una de sus fichas reales.
+let posicionesPistaNumeros = [];
+
+function getBoardCells(){
+  return Array.from(document.querySelectorAll(".casilla"));
+}
+
+function getRemainingNumbersForColor(colorIndex){
+  return getBoardCells()
+    .filter(c=>{
+      const n=Number(c.querySelector(".num")?.textContent);
+      return n && (n-1)%5===colorIndex && !c.classList.contains("tachada");
+    })
+    .map(c=>Number(c.querySelector(".num").textContent));
+}
+
+function addDeducedNumber(colorIndex){
+  const remaining=getRemainingNumbersForColor(colorIndex);
+
+  if(remaining.length!==1){
+    alert("Para añadirlo por descarte debe quedar exactamente un número sin tachar de ese color.");
+    return;
+  }
+
+  deduccionesPorColor[colorIndex]=remaining[0];
+  renderMyHand();
+}
+
+function renderDeductionOrderButtons(){
+  const box=$("deductionOrderButtons");
+  if(!box)return;
+
+  const names=["VERDE","MORADO","AZUL","ROJO","NARANJA"];
+  const colors=COLORS;
+
+  box.innerHTML=names.map((name,colorIndex)=>{
+    const remaining=getRemainingNumbersForColor(colorIndex);
+    const already=Object.prototype.hasOwnProperty.call(deduccionesPorColor,colorIndex);
+    const number=deduccionesPorColor[colorIndex];
+
+    // Solo aparece "Añadir" cuando queda exactamente UNA opción.
+    // Una vez añadida, queda guardada aunque después se cambien tachaduras.
+    if(already){
+      return `
+        <button type="button" disabled
+          style="background:${colors[colorIndex]};opacity:1">
+          ${name} · ${number} ✓
+        </button>
+      `;
+    }
+
+    if(remaining.length===1){
+      return `
+        <button type="button"
+          style="background:${colors[colorIndex]}"
+          onclick="addDeducedNumber(${colorIndex})">
+          ${name} · Añadir ${remaining[0]}
+        </button>
+      `;
+    }
+
+    return `
+      <button type="button" disabled
+        style="background:${colors[colorIndex]}">
+        ${name} · ${remaining.length} opciones
+      </button>
+    `;
+  }).join("");
+}
+
+function renderMyHand(){
+ const mine=state.players.find(p=>p.id===me);
+ if(!mine)return;
+
+ const ordered=(mine.code||[]).slice().sort((a,b)=>a.n-b.n);
+
+ if(ordered.length!==5){
+   $("myHand").innerHTML="<div class='empty'>Esperando tus 5 fichas...</div>";
+   renderDeductionOrderButtons();
+   return;
+ }
+
+ // La pista de posición se coloca visualmente justo donde encajaría el número
+ // entre tus cinco fichas, usando TUS números como referencia.
+ const parts=[];
+ const hintNumbers=Array.from(new Set((posicionesPistaNumeros||[]).map(Number).filter(Number.isFinite)));
+ const insertedHints=new Set();
+
+ ordered.forEach((t,i)=>{
+   hintNumbers.filter(n=>!insertedHints.has(n) && n < Number(t.n)).sort((a,b)=>a-b).forEach(hintN=>{
+     parts.push(`
+       <div class="hint-slot" title="La ficha ${hintN} iría aquí según tus cinco números">
+         <div>
+           <div class="hint-number">${hintN}</div>
+           <div class="hint-label">PISTA</div>
+         </div>
+       </div>`);
+     insertedHints.add(hintN);
+   });
+
+   parts.push(`
+      <div class="my-card" style="border-color:${t.color}">
+        <div class="circle" style="background:${t.color}">${Object.prototype.hasOwnProperty.call(deduccionesPorColor,t.colorIndex) ? deduccionesPorColor[t.colorIndex] : ''}</div>
+        <div>${t.colorName}</div>
+        <div class="pos">${i+1}. posición</div>
+        <div class="order">${i===0?"MENOR":i===4?"MAYOR":"ORDENADO"}</div>
+      </div>`);
+ });
+
+ // Las pistas que irían después de tu quinta ficha se mantienen todas al final.
+ hintNumbers.filter(n=>!insertedHints.has(n)).sort((a,b)=>a-b).forEach(hintN=>{
+   parts.push(`
+     <div class="hint-slot" title="La ficha ${hintN} iría después de tu quinta ficha">
+       <div>
+         <div class="hint-number">${hintN}</div>
+         <div class="hint-label">PISTA</div>
+       </div>
+     </div>`);
+ });
+
+ $("myHand").innerHTML=parts.join("");
+ renderDeductionOrderButtons();
+}
+function showTurnNotification(){
+  activarSonido();
+  sonidoTurno();
+ const box=$("turnNotification");
+ if(!box)return;
+ const mePlayer=state?.players?.find(p=>p.id===me);
+ box.textContent=`🎯 ¡Es tu turno${mePlayer?.name?", "+mePlayer.name:""}!`;
+ box.classList.add("show");
+ if(navigator.vibrate){ try{navigator.vibrate([180,80,180]);}catch(e){} }
+ clearTimeout(window.__turnNoticeTimer); window.__turnNoticeTimer=setTimeout(()=>box.classList.remove("show"),7000);
+}
+function notifyTurnChange(force=false){
+ if(!state||state.winner)return;
+ const current=state.players[state.turn];
+ if(!current||current.id!==me)return;
+ const seq=Number(state.turnSeq||0);
+ if(!force && lastNotifiedTurnSeq===seq)return;
+ lastNotifiedTurnSeq=seq;
+ lastNotifiedTurn=state.turn;
+ showTurnNotification();
+}
+function render(){
+  elegirPrimerTurnoAleatorio();
+  try{
+    if(state && state.winner){
+      const winnerKey = String(state.winner);
+      if(window._lastWinnerShown !== winnerKey){
+        window._lastWinnerShown = winnerKey;
+        setTimeout(()=>mostrarMensajeGanador(state.winner),120);
+      }
+    }else{
+      window._lastWinnerShown = null;
+    }
+  }catch(e){}
+
+ if(!state)return;
+ const mine=state.players.find(p=>p.id===me),opp=state.players.filter(p=>p.id!==me&&p.connected);
+
+ const currentTurnPlayer=state.players[state.turn];
+ const currentSeq=Number(state.turnSeq||0);
+ const isMyTurn=!!(currentTurnPlayer && currentTurnPlayer.id===me && !state.winner);
+ if(isMyTurn) notifyTurnChange(false);
+ else if(currentTurnPlayer){
+   lastNotifiedTurn=state.turn;
+   lastNotifiedTurnSeq=currentSeq;
+ }
+ const turnAlert=$("turnAlert");
+ if(turnAlert){
+   if(state.winner){
+     turnAlert.className="turn-alert";
+     turnAlert.textContent=`🏆 Partida terminada: ${state.winner}`;
+   } else if(isMyTurn){
+     turnAlert.className="turn-alert mine";
+     turnAlert.textContent="🎯 ¡ES TU TURNO!";
+   } else {
+     turnAlert.className="turn-alert other";
+     turnAlert.textContent=`⏳ Turno de ${currentTurnPlayer?.name||"—"}`;
+   }
+ }
+ $("turnShow").textContent=state.winner?`Ganador: ${state.winner}`:state.players[state.turn]?.name||"—";
+ $("players").innerHTML=state.players.map((p,i)=>`<div class="player ${p.id===me?"me ":""}${i===state.turn?"turn ":""}${!p.alive?"out":""}"><strong>${p.name}</strong><span class="badge">${!p.alive?"ELIMINADO":i===state.turn?"SU TURNO":p.connected?"EN PARTIDA":"ESPERANDO"}</span></div>`).join("");
+ renderMyHand();
+
+ $("opponents").innerHTML=opp.map(p=>{
+   const code=isHost?p.code||[]:opponentCodes[p.id]?.code||[];
+   return `<div class="zone"><h3>${p.name}${!p.alive?" · eliminado":""}</h3><div class="tiles">${code.length?code.map(tileHTML).join(""):"<div class='empty'>Esperando fichas...</div>"}</div></div>`;
+ }).join("")||"<div class='empty'>Esperando jugadores...</div>";
+
+ const publicTiles=state.public.filter(t=>t.n);
+ $("publicTiles").innerHTML=publicTiles.length?publicTiles.slice().reverse().map(tileHTML).join(""):"<div class='empty'>Aún no se ha revelado ninguna ficha.</div>";
+ const latestTile=publicTiles.length?publicTiles[publicTiles.length-1]:null;
+ $("pubCurrent").innerHTML=latestTile
+   ? `<b>N.º ${latestTile.n}</b> · ${latestTile.points} puntos`
+   : "Revela una ficha para poder pedir la pista.";
+ $("targetSel").innerHTML=opp.filter(p=>p.alive).map(p=>`<option value="${p.id}">${p.name}</option>`).join("");
+ updateHintFields();
+
+ const act=canAct(),drawn=!!mine?.drawn;
+ $("drawBtn").disabled=!act||drawn;
+ if($("drawColorSel")) $("drawColorSel").disabled=!act||drawn;
+ $("hintBtn").disabled=!act||!drawn||publicTiles.length===0||opp.filter(p=>p.alive).length===0;
+ $("passBtn").disabled=!act||(!drawn&&!mine?.hasHint);
+ $("codeBtn").disabled=!mine?.alive||!!state.winner;
+ if($("newGameBtn")){ $("newGameBtn").disabled=!state.winner; $("newGameBtn").textContent=state.winner ? `🔄 Volver a empezar otra partida (ganó ${state.winner})` : "🔄 Volver a empezar otra partida"; }
+
+ $("turnHelp").innerHTML=state.winner?`<span class="winner">🏆 ${state.winner}</span>`:act?(drawn?"Ya has revelado una ficha. Ahora pide una pista. Al pedirla, el turno pasará automáticamente al siguiente jugador.":"Es tu turno: elige un color y revela una ficha de la reserva."):"Espera a que llegue tu turno.";
+ $("log").innerHTML=state.public.filter(x=>x.text).slice().reverse().map(x=>`<div class="event">${x.text}</div>`).join("")||"<div class='empty'>Todavía no hay pistas.</div>";
+ $("log").scrollTop=0;
+}
+
+const tablero=$("tableroDeduccion");
+const BOARD_COLORS=[
+  {index:0,name:"VERDE",color:"#22c55e"},
+  {index:1,name:"MORADO",color:"#a96ac8"},
+  {index:2,name:"AZUL",color:"#16a9d8"},
+  {index:3,name:"ROJO",color:"#e7352b"},
+  {index:4,name:"NARANJA",color:"#f5a000"}
+];
+for(let colorIndex=0;colorIndex<5;colorIndex++){
+  for(let n=1+colorIndex;n<=60;n+=5){
+    const points=(Math.floor((n-1)/5)%3)+1;
+    const c=document.createElement("div");
+    c.className="casilla";
+    c.style.background=BOARD_COLORS[colorIndex].color;
+    c.title=`${BOARD_COLORS[colorIndex].name} · ${n} · ${points} punto${points===1?"":"s"}`;
+    c.innerHTML=`<span class="num">${n}</span><span class="puntos">${"●".repeat(points)}</span>`;
+    c.onclick=()=>{c.classList.toggle("tachada");renderDeductionOrderButtons();};
+    tablero.appendChild(c);
+  }
+}
+
+
+/* =========================================================
+   AVISO SONORO DE TURNO
+========================================================= */
+let audioCtx = null;
+let audioReady = false;
+let lastTurnNotified = null;
+
+function activarSonido() {
+  try {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    audioReady = true;
+  } catch(e) {}
+}
+
+function sonidoTurno() {
+  if (!audioReady || !audioCtx) return;
+  try {
+    if (audioCtx.state === "suspended") audioCtx.resume();
+
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(660, now);
+    osc.frequency.setValueAtTime(880, now + 0.12);
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.18, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.46);
+  } catch(e) {}
+}
+
+document.addEventListener("pointerdown", activarSonido, {passive:true});
+document.addEventListener("touchstart", activarSonido, {passive:true});
+
+
+/* =========================================================
+   MENSAJE DE VICTORIA
+========================================================= */
+function mostrarMensajeGanador(nombre){
+  prepararSiguienteTurnoTrasVictoria();
+  let old = document.getElementById("victoryOverlay");
+  if(old) old.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "victoryOverlay";
+  overlay.className = "victory-overlay";
+  overlay.innerHTML = `
+    <div class="victory-box">
+      <div class="trophy">🏆</div>
+      <h2>¡Código 5!</h2>
+      <p><b>${nombre}</b> ha ganado la partida.</p>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  setTimeout(() => {
+    const aviso = document.getElementById("victoryOverlay");
+    if (aviso) aviso.remove();
+  }, 5000);
+
+
+  // Sonido de victoria si el audio del turno ya está habilitado.
+  try{
+    if(typeof activarSonido === "function") activarSonido();
+    if(typeof audioCtx !== "undefined" && audioCtx){
+      const now = audioCtx.currentTime;
+      [523.25,659.25,783.99].forEach((freq,i)=>{
+        const osc=audioCtx.createOscillator();
+        const gain=audioCtx.createGain();
+        osc.type="sine";
+        osc.frequency.value=freq;
+        gain.gain.setValueAtTime(0.0001,now+i*0.16);
+        gain.gain.exponentialRampToValueAtTime(0.18,now+i*0.16+0.03);
+        gain.gain.exponentialRampToValueAtTime(0.0001,now+i*0.16+0.30);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now+i*0.16);
+        osc.stop(now+i*0.16+0.31);
+      });
+    }
+  }catch(e){}
+}
+
+
+/* =========================================================
+   PRIMER TURNO ALEATORIO
+========================================================= */
+function elegirPrimerTurnoAleatorio() {
+  return;
+}
+
+/* =========================================================
+   INICIO MANUAL + ROTACIÓN DEL PRIMER TURNO
+========================================================= */
+window.codigo5InicioManual = window.codigo5InicioManual || false;
+window.codigo5TurnoSiguiente = window.codigo5TurnoSiguiente ?? null;
+
+function jugadoresConectadosActuales() {
+  try {
+    return (state.players || []).filter(p => p && p.connected !== false);
+  } catch(e) {
+    return [];
+  }
+}
+
+function prepararInicioManual() {
+  try {
+    const jugadores = jugadoresConectadosActuales();
+    const iniciado = !!state.started;
+
+    let btn = document.getElementById("btnEmpezarPartida");
+
+    if (!iniciado && jugadores.length >= 2) {
+      if (!btn) {
+        btn = document.createElement("button");
+        btn.id = "btnEmpezarPartida";
+        btn.type = "button";
+        btn.textContent = "🎲 Empezar partida";
+        btn.style.cssText =
+          "display:inline-block;width:auto;margin:0 0 0 8px;padding:12px 18px;" +
+          "font-size:18px;font-weight:800;border:0;border-radius:12px;" +
+          "cursor:pointer;background:#c60072;color:#fff;box-shadow:0 4px 12px #0002;" +
+          "vertical-align:middle;";
+        btn.onclick = empezarPartidaManual;
+        document.body.appendChild(btn);
+      }
+
+      const botones = Array.from(document.querySelectorAll("button"));
+      const compartir = botones.find(b =>
+        /compartir partida/i.test((b.textContent || "").trim())
+      );
+
+      if (compartir && compartir.parentElement) {
+        compartir.insertAdjacentElement("afterend", btn);
+        btn.style.display = "inline-block";
+        btn.style.width = "auto";
+      }
+    } else if (iniciado && btn) {
+      btn.remove();
+    }
+  } catch(e) {}
+}
+function empezarPartidaManual(){
+  try{
+    if(!isHost){
+      alert("Solo el creador de la partida puede iniciarla.");
+      return;
+    }
+
+    const jugadores=jugadoresConectadosActuales();
+    if(jugadores.length<2){
+      alert("Necesitáis al menos 2 jugadores unidos para empezar.");
+      return;
+    }
+
+    // La primera partida comienza con un jugador elegido al azar.
+    // En partidas posteriores, codigo5TurnoSiguiente contiene el siguiente
+    // jugador al ganador de la partida anterior.
+    let elegidoId=null;
+
+    if(window.codigo5TurnoSiguiente!==null){
+      const siguiente=jugadores.find(p=>p.id===window.codigo5TurnoSiguiente);
+      if(siguiente) elegidoId=siguiente.id;
+      window.codigo5TurnoSiguiente=null;
+    }
+
+    if(!elegidoId){
+      elegidoId=jugadores[Math.floor(Math.random()*jugadores.length)].id;
+    }
+
+    const idx=state.players.findIndex(p=>p.id===elegidoId);
+    if(idx<0){
+      alert("No se ha podido determinar el jugador inicial.");
+      return;
+    }
+
+    state.turn=idx;
+    state.turnSeq=(state.turnSeq||0)+1;
+    state.started=true;
+    state.initialTurnRandomized=true;
+    state.winner=null;
+
+    // Limpiar estados temporales de las fichas.
+    state.players.forEach(p=>{
+      p.drawn=false;
+      p.hasHint=false;
+      p.alive=true;
+    });
+
+    // Avisar a todos los jugadores de que la partida ha comenzado.
+    const s=safeState();
+    for(const p of state.players){
+      if(p.id==="p1")continue;
+      const c=conns[p.id];
+      if(!c)continue;
+      try{
+        c.send({type:"state",state:s});
+        c.send({type:"private",code:p.code});
+        c.send({type:"opponents",opponents:getOpponentData(p.id)});
+        c.send({type:"turn",turn:state.turn,turnSeq:state.turnSeq});
+      }catch(e){}
+    }
+
+    const btn=document.getElementById("btnEmpezarPartida");
+    if(btn)btn.remove();
+
+    render();
+    notifyTurnChange(true);
+  }catch(e){
+    console.error("Error al empezar partida:",e);
+    alert("No se ha podido iniciar la partida. Inténtalo de nuevo.");
+  }
+}
+
+/* Al pulsar volver a jugar, si hay un ganador, el siguiente jugador
+   será el que comience la nueva partida. */
+function prepararSiguienteTurnoTrasVictoria() {
+  try {
+    if (!state || !state.winner) return;
+
+    const jugadores = jugadoresConectadosActuales();
+    const idxGanador = jugadores.findIndex(p => p.id === state.winner);
+    if (idxGanador < 0 || jugadores.length === 0) return;
+
+    const siguiente = jugadores[(idxGanador + 1) % jugadores.length];
+    window.codigo5TurnoSiguiente = siguiente.id;
+  } catch(e) {}
+}
+
+/* Comprobación visual periódica del botón de inicio. */
+setInterval(prepararInicioManual, 700);
+
+
+/* =========================================================
+   INVITACIÓN DIRECTA A LA SALA
+========================================================= */
+function obtenerCodigoSalaActual(){
+  try {
+    return String(
+      roomCode ||
+      state?.roomCode ||
+      state?.roomId ||
+      state?.code ||
+      localStorage.getItem("codigoSala") ||
+      ""
+    ).trim();
+  } catch(e) { return ""; }
+}
+
+function compartirInvitacionDirecta(){
+  const codigo=obtenerCodigoSalaActual();
+  if(!codigo){
+    alert("No se ha encontrado el código de esta sala. Comprueba que la partida está creada.");
+    return;
+  }
+  const url=new URL(window.location.href);
+  url.searchParams.set("sala",codigo);
+  url.searchParams.delete("room");
+  url.searchParams.delete("codigo");
+  const enlace=url.toString();
+
+  if(navigator.share){
+    navigator.share({
+      title:"Código 5 · Únete a mi partida",
+      text:"🎮 Únete a mi partida de Código 5. Abre el enlace y solo tendrás que poner tu nombre.",
+      url:enlace
+    }).catch(()=>{});
+  }else if(navigator.clipboard){
+    navigator.clipboard.writeText(enlace).then(()=>{
+      alert("¡Enlace copiado! Envíalo por WhatsApp y podrán entrar solo con su nombre.");
+    }).catch(()=>{
+      prompt("Copia este enlace y envíalo:",enlace);
+    });
+  }else{
+    prompt("Copia este enlace y envíalo:",enlace);
+  }
+}
+function comprobarInvitacionSala(){
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const sala = params.get("sala");
+    if(!sala) return;
+
+    window.codigoSalaInvitacion = sala;
+    const lobby = document.getElementById("lobby"); if(lobby) lobby.style.visibility="hidden";
+
+    // Mostrar un formulario sencillo para que el invitado solo tenga
+    // que escribir su nombre. La unión real utiliza las funciones
+    // existentes del juego si están disponibles.
+    if(document.getElementById("invitacionOverlay")) return;
+
+    const overlay = document.createElement("div");
+    overlay.id = "invitacionOverlay";
+    overlay.style.cssText =
+      "position:fixed;inset:0;z-index:10000;display:flex;align-items:center;" +
+      "justify-content:center;background:#211b2dcc;padding:20px;";
+
+    overlay.innerHTML = `
+      <div style="width:min(430px,92vw);background:#fff;border-radius:22px;
+        padding:26px;text-align:center;box-shadow:0 15px 50px #0005;">
+        <div style="font-size:48px">🎮</div>
+        <h2 style="margin:8px 0">Unirse a Código 5</h2>
+        <p style="margin:0 0 18px">Escribe tu nombre para entrar en la partida.</p>
+        <input id="nombreInvitacion" type="text" maxlength="20"
+          placeholder="Tu nombre"
+          style="width:100%;box-sizing:border-box;padding:13px;border:1px solid #ccc;
+          border-radius:10px;font-size:17px;margin-bottom:12px;">
+        <button id="btnUnirseInvitacion"
+          style="width:100%;padding:13px;border:0;border-radius:10px;
+          background:#c60072;color:#fff;font-size:18px;font-weight:700;">
+          Unirme a la partida
+        </button>
+        <p style="font-size:13px;margin-top:12px;color:#777">
+          Sala: ${String(sala).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+        </p>
+      </div>`;
+
+    document.body.appendChild(overlay);
+
+    document.getElementById("btnUnirseInvitacion").onclick = function(){
+      const nombre = document.getElementById("nombreInvitacion").value.trim();
+      if(!nombre){
+        alert("Escribe tu nombre.");
+        return;
+      }
+
+      /*
+       * Dejamos el código de sala disponible para el flujo de unión existente.
+       * Si la versión del juego expone una función de unión, la usamos.
+       */
+      try {
+        if(typeof joinRoom === "function"){
+          overlay.remove();
+          joinRoom(sala,nombre);
+        } else {
+          const lobby=document.getElementById("lobby"); if(lobby) lobby.style.visibility="visible";
+          alert("No se ha podido conectar automáticamente con la partida.");
+          return;
+        }
+      } catch(e) {
+        alert("No se ha podido unir a la partida. Puedes usar el código corto de la sala.");
+      }
+    };
+  } catch(e) {}
+}
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  try {
+    const botones = Array.from(document.querySelectorAll("button"));
+    const compartir = botones.find(b => /compartir partida/i.test(b.textContent || ""));
+    if (compartir) {
+      compartir.onclick = function(ev){
+        ev.preventDefault();
+        compartirInvitacionDirecta();
+      };
+    }
+    aplicarEntradaPorInvitacion(); setTimeout(comprobarInvitacionSala, 150);
+  } catch(e) {}
+});
+
+
+document.addEventListener("keydown",function(ev){
+  if(ev.key==="Enter"){
+    const input=document.getElementById("nombreInvitacion");
+    const btn=document.getElementById("btnUnirseInvitacion");
+    if(input && btn && document.activeElement===input) btn.click();
+  }
+});
+
+function aplicarEntradaPorInvitacion(){
+  try{
+    const params=new URLSearchParams(location.search);
+    const sala=params.get("sala");
+    if(!sala) return;
+    window.codigoSalaInvitacion=sala;
+    ["room","roomCode","codigoSala"].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.value=sala;
+    });
+  }catch(e){}
+}
+
+</script>
+</body>
+</html>
